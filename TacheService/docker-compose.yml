@@ -1,0 +1,28 @@
+#
+#
+#services:
+#  tache-db:
+#    image: postgres
+#    container_name: tache-db
+#    restart: always
+#    environment:
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=admin
+#      - POSTGRES_DB=tachedb
+#    ports:
+#      - '5431:5431'
+#
+#  tache:
+#    container_name: tache_app
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - '8083:8083'
+#    environment:
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://psql-db:5431/tachedb
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=admin
+#      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+#    depends_on:
+#      - tache-db

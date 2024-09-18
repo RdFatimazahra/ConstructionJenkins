@@ -1,0 +1,28 @@
+#
+#
+#services:
+#  db-auth:
+#    image: postgres
+#    container_name: db-auth
+#    restart: always
+#    environment:
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=admin
+#      - POSTGRES_DB=userdb
+#    ports:
+#      - '5433:5433'
+#
+#  auth:
+#    container_name: authentication_app
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - '8084:8084'
+#    environment:
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://db-auth:5432/userdb
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=admin
+#      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+#    depends_on:
+#      - db-auth

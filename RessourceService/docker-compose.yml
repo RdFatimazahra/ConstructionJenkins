@@ -1,0 +1,28 @@
+#
+#
+#services:
+#  ressource-db:
+#    image: postgres
+#    container_name: ressource-db
+#    restart: always
+#    environment:
+#      - POSTGRES_USER=postgres
+#      - POSTGRES_PASSWORD=admin
+#      - POSTGRES_DB=ressourcedb
+#    ports:
+#      - '5430:5430'
+#
+#  tache:
+#    container_name: ressource
+#    build:
+#      context: .
+#      dockerfile: Dockerfile
+#    ports:
+#      - '8082:8082'
+#    environment:
+#      - SPRING_DATASOURCE_URL=jdbc:postgresql://psql-db:5430/ressourcedb
+#      - SPRING_DATASOURCE_USERNAME=postgres
+#      - SPRING_DATASOURCE_PASSWORD=admin
+#      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+#    depends_on:
+#      - ressource-db

@@ -1,0 +1,158 @@
+version: '3'
+
+services:
+  discovery:
+    build: ./Eureka
+    ports:
+      - "8761:8761"
+    environment:
+      - SPRING_APPLICATION_NAME=discovery
+      - SERVER_PORT=8761
+      - EUREKA_CLIENT_REGISTER_WITH_EUREKA=false
+      - EUREKA_CLIENT_FETCH_REGISTRY=false
+    restart: always
+    networks:
+      - construction-network
+
+  api-gateway:
+    build: ./GatewayService
+    ports:
+      - "8087:8087"
+    environment:
+      - SPRING_APPLICATION_NAME=api-gateway
+      - SPRING_CLOUD_GATEWAY_ROUTES[0].ID=projet-service
+      - SPRING_CLOUD_GATEWAY_ROUTES[0].URI=http://projet-service:8090
+      - SPRING_CLOUD_GATEWAY_ROUTES[0].PREDICATES[0]=Path=/api/projets/**
+      - SPRING_CLOUD_GATEWAY_ROUTES[1].ID=tache-service
+      - SPRING_CLOUD_GATEWAY_ROUTES[1].URI=http://tache-service:8083
+      - SPRING_CLOUD_GATEWAY_ROUTES[1].PREDICATES[0]=Path=/api/taches/**
+      - SPRING_CLOUD_GATEWAY_ROUTES[2].ID=ressource-service
+      - SPRING_CLOUD_GATEWAY_ROUTES[2].URI=http://ressource-service:8082
+      - SPRING_CLOUD_GATEWAY_ROUTES[2].PREDICATES[0]=Path=/api/ressources/**
+      - SPRING_CLOUD_GATEWAY_ROUTES[3].ID=user-management
+      - SPRING_CLOUD_GATEWAY_ROUTES[3].URI=http://user-management:8084
+      - SPRING_CLOUD_GATEWAY_ROUTES[3].PREDICATES[0]=Path=/api/v1/auth/**
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery:8761/eureka/
+    depends_on:
+      - discovery
+    networks:
+      - construction-network
+
+  projet-db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=projetdb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+    networks:
+      - construction-network
+
+  projet-service:
+    build: ./ProjetService
+    ports:
+      - "8090:8090"
+    environment:
+      - SPRING_APPLICATION_NAME=projet-service
+      - SERVER_PORT=8090
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://projet-db:5432/projetdb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery:8761/eureka/
+    depends_on:
+      - discovery
+      - projet-db
+    networks:
+      - construction-network
+
+  user-db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=userdb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+    networks:
+      - construction-network
+
+  user-management:
+    build: ./AuthenticationService
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_APPLICATION_NAME=user-management
+      - SERVER_PORT=8084
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-db:5432/userdb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery:8761/eureka/
+    depends_on:
+      - discovery
+      - user-db
+    networks:
+      - construction-network
+
+  tache-db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=tachedb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+    networks:
+      - construction-network
+
+  tache-service:
+    build: ./TacheService
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_APPLICATION_NAME=tache-service
+      - SERVER_PORT=8083
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://tache-db:5432/tachedb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery:8761/eureka/
+    depends_on:
+      - discovery
+      - tache-db
+    networks:
+      - construction-network
+
+  ressource-db:
+    image: postgres
+    environment:
+      - POSTGRES_DB=ressourcedb
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=admin
+    networks:
+      - construction-network
+
+  ressource-service:
+    build: ./RessourceService
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_APPLICATION_NAME=ressource-service
+      - SERVER_PORT=8082
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://ressource-db:5432/ressourcedb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=admin
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery:8761/eureka/
+    depends_on:
+      - discovery
+      - ressource-db
+    networks:
+      - construction-network
+
+networks:
+  construction-network:
+    driver: bridge
+#    networks:
+#      - construction-network
+#
+#
+#networks:
+#  construction-network:
+#    external: true
